@@ -76,14 +76,20 @@
             dividerColor: '#888',
             enableKeyboard: false,
             keypressAmount: 20,
+            synced: false,
             onReady: function () { return undefined; },
             changeOnResize: true,
             isFullScreen: false,
             permArrows: false,
             arrowLeftOffset: 0,
-            arrowRightOffset: 0
+            arrowRightOffset: 0,
+            showArrows: true
         };
         opts = $.extend(defaults, options);
+
+        // Effection permArrows with arrows to be sure we wont do any action
+        // over arrows if user doesn't want to show it
+        opts.permArrows = (opts.permArrows && opts.showArrows);
 
         return this.each(function () {
             var o = opts,
@@ -109,8 +115,10 @@
             _after_.options.inertia = false;
 
             // Create an inner div wrapper (dragwrapper) to hold the images.
-            $(obj).prepend('<div id="' + dragwrapper + '"><div id="' + dragEl + '"><img width="8" height="56" alt="handle" src="' + o.imagePath + 'handle.gif" id="' + handle + '" /></div></div>'); // Create drag handle
-            $(obj).append('<img src="' + o.imagePath + 'lt-small.png" id="' + ltArrow + '"><img src="' + o.imagePath + 'rt-small.png" id="' + rtArrow + '">');
+            $(obj).prepend('<div id="' + dragwrapper + '"><div id="' + dragEl + '"></div><img width="48" height="48" alt="handle" src="' + o.imagePath + 'handle.png" id="' + handle + '" /></div>'); // Create drag handle
+            if (o.showArrows) {
+                $(obj).append('<img src="' + o.imagePath + 'lt-small.png" id="' + ltArrow + '"><img src="' + o.imagePath + 'rt-small.png" id="' + rtArrow + '">');
+            }
 
             $(dragwrapperId).css({
                 'opacity': 0.25,
@@ -118,7 +126,7 @@
                 'padding': '0',
                 'left':  (mapWidth / 2) - ($(handleId).width() / 2) + 'px',
                 'z-index': '30'
-            }).width($(handleId).width()).height(mapHeight);
+            }).width($(handleId).width()).height('100%');
 
             $(_before_._container).height(mapHeight).width(mapWidth / 2).css({
                 'position': 'absolute',
@@ -133,10 +141,17 @@
                 'right': '0px'
             });    // Set CSS properties of the after map div
 
-            $(dragElId).width(2).height(mapHeight).css({
+            $(handleId).css({
+                'z-index': '100',
+                'position': 'relative',
+                'cursor': o.cursor,
+                'top': (mapHeight / 2) - ($(handleId).height() / 2) + 'px'
+            });
+
+            $(dragElId).width(2).height('100%').css({
                 'background': o.dividerColor,
                 'position': 'absolute',
-                'left': '3px'
+                'left': ($(handleId).width() / 2) - 1
             });    // Set drag handle CSS properties
 
             $(_before_._container).css({
@@ -149,14 +164,6 @@
                 'position': 'absolute',
                 'top': '0px',
                 'right': '0px'
-            });
-
-            $(handleId).css({
-                'z-index': '100',
-                'position': 'relative',
-                'cursor': o.cursor,
-                'top': (mapHeight / 2) - ($(handleId).height() / 2) + 'px',
-                'left': '-3px'
             });
 
             if (o.showFullLinks) {
@@ -179,19 +186,20 @@
                     var w = $(obj).width(),
                         h = $(obj).height();
 
+                    $(_before_._container).width(w).height(h);
+                    $(_after_._container).width(w).height(h);
+                    _before_.invalidateSize();
+                    _after_.invalidateSize();
+                    clearInterval(cInt);
+
                     // If it is fullscreen, use window's height instead of wrapper's
                     if (o.isFullScreen) {
                         h = $(window).height();
                     }
                     $(handleId).css({'top': ((h / 2) - ($(handleId).height() / 2)) + 'px'});
 
-                    $(_before_._container).width(w).height(h);
-                    $(_after_._container).width(w).height(h);
-                    _before_.invalidateSize();
-                    _after_.invalidateSize();
-                    clearInterval(cInt);
                     cInt = setInterval(function () {
-                        $(_before_._container).width(parseInt($(dragwrapperId).css('left'), 10) + 4);
+                        $(_before_._container).width(parseInt($(dragwrapperId).css('left'), 10) + 24);
                         if ($(_before_._container).width() !== w && $(_before_._container).height() !== w) {
                             clearInterval(cInt);
                         }
@@ -223,11 +231,11 @@
             }
 
             function drag() {
-                if (!o.permArrows) {
+                if (!o.permArrows && o.showArrows) {
                     $(ltArrowId + ', ' + rtArrowId).stop().css('opacity', 0);
                 }
 
-                $('div:eq(2)', obj).width(parseInt($(this).css('left'), 10) + 4);
+                $('div:eq(2)', obj).width(parseInt($(this).css('left'), 10) + 24);
                 if (o.permArrows) {
                     $(ltArrowId).css({'z-index': '20', 'left': parseInt($(dragwrapperId).css('left'), 10) + o.arrowLeftOffset + lArrOffsetStatic + 'px'});
                     $(rtArrowId).css({'z-index': '20', 'left': parseInt($(dragwrapperId).css('left'), 10) + o.arrowRightOffset + rArrOffsetStatic + 'px'});
@@ -249,7 +257,7 @@
                         h = $(window).height();
                     }
 
-                    if (!o.permArrows) {
+                    if (!o.permArrows && o.showArrows) {
                         $(ltArrowId).stop().css({
                             'z-index': '20',
                             'position': 'absolute',
@@ -265,7 +273,7 @@
                     }
                     $(dragwrapperId).animate({'opacity': 1}, 200);
                 }, function () {
-                    if (!o.permArrows) {
+                    if (!o.permArrows && o.showArrows) {
                         $(ltArrowId).animate({opacity: 0, left: parseInt($(ltArrowId).css('left'), 10) + o.arrowLeftOffset - 6 + 'px'}, 350);
                         $(rtArrowId).animate({opacity: 0, left: parseInt($(rtArrowId).css('left'), 10) + o.arrowRightOffset + 6 + 'px'}, 350);
                     }
@@ -310,8 +318,12 @@
             }
 
              // Pan and zoom other map when one map pans/zooms
-            _before_.on('dragend', _mapMove_).on('zoomend', _mapMove_);
-            _after_.on('dragend', _mapMove_).on('zoomend', _mapMove_);
+             // If you are syncing yourself (e.g leaflet sync plugin), you can
+             // disable default sync for better experience
+            if (!o.synced) {
+                _before_.on('dragend', _mapMove_).on('zoomed', _mapMove_);
+                _after_.on('dragend', _mapMove_).on('zoomed', _mapMove_);
+            }
         });
     };
 }));
