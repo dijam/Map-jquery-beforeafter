@@ -72,7 +72,7 @@
             imagePath: './css/images/',
             cursor: 'pointer',
             clickSpeed: 600,
-            linkDisplaySpeed: 200,
+            linkDisplaySpeed: 120,
             dividerColor: '#888',
             enableKeyboard: false,
             keypressAmount: 20,
@@ -115,7 +115,7 @@
             _after_.options.inertia = false;
 
             // Create an inner div wrapper (dragwrapper) to hold the images.
-            $(obj).prepend('<div id="' + dragwrapper + '"><div id="' + dragEl + '"></div><img width="48" height="48" alt="handle" src="' + o.imagePath + 'handle.png" id="' + handle + '" /></div>'); // Create drag handle
+            $(obj).prepend('<div id="' + dragwrapper + '"><div id="' + dragEl + '"></div><img width="48" height="48" alt="handle" src="' + o.handleImage + '" id="' + handle + '" /></div>'); // Create drag handle
             if (o.showArrows) {
                 $(obj).append('<img src="' + o.imagePath + 'lt-small.png" id="' + ltArrow + '"><img src="' + o.imagePath + 'rt-small.png" id="' + rtArrow + '">');
             }
@@ -124,9 +124,45 @@
                 'opacity': 0.25,
                 'position': 'absolute',
                 'padding': '0',
-                'left':  (mapWidth / 2) - ($(handleId).width() / 2) + 'px',
+                'left':  (mapWidth / 2) - (120 / 2) + 'px',
                 'z-index': '30'
-            }).width($(handleId).width()).height('100%');
+            }).width(120).height('100%');
+
+            if (o.label && o.label.after) {
+                var afterLabel = $(document.createElement('span'));
+                afterLabel.attr('id', 'afterLabel');
+                afterLabel.append(o.label.after.text);
+                afterLabel.css({
+                    'position': 'absolute',
+                    'right': 0,
+                    'bottom': 0,
+                    'background-color': o.label.after.backgroundColor,
+                    'color': o.label.after.textColor,
+                    'text-shadow': 'rgba(0, 0, 0, 0.7) 1px 1px 2px',
+                    'text-align': 'center',
+                    'font-size': '1.4em',
+                    'width': '60px'
+                });
+                $(dragwrapperId).append(afterLabel);
+            }
+
+            if (o.label && o.label.before) {
+                var beforeLabel = $(document.createElement('span'));
+                beforeLabel.attr('id', 'beforeLabel');
+                beforeLabel.append(o.label.before.text);
+                beforeLabel.css({
+                    'position': 'absolute',
+                    'left': 0,
+                    'bottom': 0,
+                    'background-color': o.label.before.backgroundColor,
+                    'color': o.label.before.textColor,
+                    'text-shadow': 'rgba(0, 0, 0, 0.7) 1px 1px 2px',
+                    'text-align': 'center',
+                    'font-size': '1.4em',
+                    'width': '60px'
+                });
+                $(dragwrapperId).append(beforeLabel);
+            }
 
             $(_before_._container).height(mapHeight).width(mapWidth / 2).css({
                 'position': 'absolute',
@@ -144,14 +180,19 @@
             $(handleId).css({
                 'z-index': '100',
                 'position': 'relative',
-                'cursor': o.cursor,
-                'top': (mapHeight / 2) - ($(handleId).height() / 2) + 'px'
+                'top': (mapHeight / 2) - ($(handleId).height() / 2) + 'px',
+                'left': 120/2 - $(handleId).width()/2 + 'px'
             });
+            $(handleId).css('cursor', o.cursors[0]);
+            $(handleId).css('cursor', o.cursors[1]);
+            $(handleId).css('cursor', o.cursors[2]);
+            $(handleId).css('cursor', o.cursors[3]);
+
 
             $(dragElId).width(2).height('100%').css({
                 'background': o.dividerColor,
                 'position': 'absolute',
-                'left': ($(handleId).width() / 2) - 1
+                'left': (120 / 2) - 1
             });    // Set drag handle CSS properties
 
             $(_before_._container).css({
@@ -199,7 +240,7 @@
                     $(handleId).css({'top': ((h / 2) - ($(handleId).height() / 2)) + 'px'});
 
                     cInt = setInterval(function () {
-                        $(_before_._container).width(parseInt($(dragwrapperId).css('left'), 10) + 24);
+                        $(_before_._container).width(parseInt($(dragwrapperId).css('left'), 10) + 60);
                         if ($(_before_._container).width() !== w && $(_before_._container).height() !== w) {
                             clearInterval(cInt);
                         }
@@ -235,7 +276,7 @@
                     $(ltArrowId + ', ' + rtArrowId).stop().css('opacity', 0);
                 }
 
-                $('div:eq(2)', obj).width(parseInt($(this).css('left'), 10) + 24);
+                $('div:eq(2)', obj).width(parseInt($(this).css('left'), 10) + 60);
                 if (o.permArrows) {
                     $(ltArrowId).css({'z-index': '20', 'left': parseInt($(dragwrapperId).css('left'), 10) + o.arrowLeftOffset + lArrOffsetStatic + 'px'});
                     $(rtArrowId).css({'z-index': '20', 'left': parseInt($(dragwrapperId).css('left'), 10) + o.arrowRightOffset + rArrOffsetStatic + 'px'});
@@ -263,15 +304,15 @@
                             'position': 'absolute',
                             'top': ((h / 2) - ($(ltArrowId).height() / 2)) + 'px',
                             'left': parseInt($(dragwrapperId).css('left'), 10) + o.arrowLeftOffset + lArrOffsetStatic + 6 + 'px'
-                        }).animate({opacity: 1, left: parseInt($(ltArrowId).css('left'), 10) - 6 + 'px'}, 200);
+                        }).animate({opacity: 1, left: parseInt($(ltArrowId).css('left'), 10) - 6 + 'px'}, 120);
 
                         $(rtArrowId).stop().css({
                             'position': 'absolute',
                             'top': ((h / 2) - ($(rtArrowId).height() / 2)) + 'px',
                             'left': parseInt($(dragwrapperId).css('left'), 10) + o.arrowRightOffset + rArrOffsetStatic - 6 + 'px'
-                        }).animate({opacity: 1, left: parseInt($(rtArrowId).css('left'), 10) + 6 + 'px'}, 200);
+                        }).animate({opacity: 1, left: parseInt($(rtArrowId).css('left'), 10) + 6 + 'px'}, 120);
                     }
-                    $(dragwrapperId).animate({'opacity': 1}, 200);
+                    $(dragwrapperId).animate({'opacity': 1}, 120);
                 }, function () {
                     if (!o.permArrows && o.showArrows) {
                         $(ltArrowId).animate({opacity: 0, left: parseInt($(ltArrowId).css('left'), 10) + o.arrowLeftOffset - 6 + 'px'}, 350);
